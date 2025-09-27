@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { GraduationCap, Users, Target, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import vincentPhoto from '@/assets/vincent-photo.png';
+import vincentPhoto from '@/assets/vincent-photo-optimized.jpg';
 
 const About = () => {
   return (
