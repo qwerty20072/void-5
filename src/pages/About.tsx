@@ -45,7 +45,8 @@ const About = () => {
                 <img 
                   src={vincentPhoto} 
                   alt="Vincent - Co-Founder & CEO"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover image-render-crisp"
+                  style={{ imageRendering: 'crisp-edges' }}
                 />
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">Vincent</h3>
