@@ -10,6 +10,7 @@ import { ArrowLeft, GraduationCap, Mail, User, MessageSquare } from 'lucide-reac
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Contact = () => {
   const { tutorId } = useParams<{ tutorId: string }>();
@@ -85,18 +86,19 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      // Format services for subject line
-      const servicesText = formData.selectedServices.join(', ');
-      
-      // Placeholder email functionality - replace with actual email service
-      const emailData = {
-        to: "tutoring@placeholder-email.com", // Replace with actual email
-        subject: `[${servicesText}] - ${formData.name}`,
-        message: `${formData.additionalInfo || 'No additional information provided'}${formData.phone ? `\n\nPhone: ${formData.phone}` : ''}`
-      };
+      // Insert contact submission into Supabase
+      const { error } = await supabase
+        .from('contact_submissions')
+        .insert({
+          tutor_id: tutorId,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || null,
+          selected_services: formData.selectedServices,
+          additional_info: formData.additionalInfo || null,
+        });
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (error) throw error;
 
       toast({
         title: "Booking request sent!",
@@ -113,6 +115,7 @@ const Contact = () => {
       });
 
     } catch (error) {
+      console.error('Error submitting contact form:', error);
       toast({
         title: "Error sending message",
         description: "Please try again or contact us directly.",

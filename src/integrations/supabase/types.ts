@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      contact_submissions: {
+        Row: {
+          additional_info: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          selected_services: string[] | null
+          tutor_id: string
+        }
+        Insert: {
+          additional_info?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          selected_services?: string[] | null
+          tutor_id: string
+        }
+        Update: {
+          additional_info?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          selected_services?: string[] | null
+          tutor_id?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           client_email: string | null

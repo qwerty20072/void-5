@@ -471,7 +471,7 @@ const Team = () => {
                 style={{ color: 'white' }}
               >
                 <Link 
-                  to={`/chat/${member.id}`}
+                  to={`/contact/${member.id}`}
                   className="text-white hover:text-white no-underline flex items-center justify-center"
                   onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 >
