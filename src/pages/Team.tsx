@@ -454,156 +454,32 @@ const Team = () => {
             />
           </div>
           
-          {/* Action Buttons */}
-          <div className="flex gap-3">
+          {/* Action Button */}
+          <div className="w-full">
             {member.account_status === 'paused' ? (
               <Button 
                 disabled
-                className="flex-1 opacity-50 cursor-not-allowed"
+                className="w-full opacity-50 cursor-not-allowed"
               >
                 <MessageSquare className="h-4 w-4 mr-2" />
-                Chat Unavailable
+                Contact Unavailable
               </Button>
             ) : (
               <Button 
                 asChild
-                className="flex-1 text-white hover:text-white hover:scale-105 transition-transform duration-200"
+                className="w-full text-white hover:text-white hover:scale-105 transition-transform duration-200"
                 style={{ color: 'white' }}
               >
                 <Link 
                   to={`/chat/${member.id}`}
-                  className="text-white hover:text-white no-underline flex items-center"
+                  className="text-white hover:text-white no-underline flex items-center justify-center"
                   onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 >
                   <MessageSquare className="h-4 w-4 mr-2" />
-                  Chat Now
+                  Contact Now
                 </Link>
               </Button>
             )}
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  className={`flex-1 transition-transform duration-200 ${
-                    stripeStatuses[member.id] 
-                      ? 'text-white hover:text-white hover:scale-105' 
-                      : 'text-muted-foreground bg-muted cursor-not-allowed opacity-60'
-                  }`}
-                  style={stripeStatuses[member.id] ? { color: 'white' } : {}}
-                  disabled={!stripeStatuses[member.id]}
-                >
-                  <GraduationCap className="h-4 w-4 mr-2" />
-                  {stripeStatuses[member.id] ? 'Buy Lessons' : 'Setup In Progress'}
-                  <ChevronDown className="h-4 w-4 ml-2" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64">
-                <DropdownMenuLabel>Choose Lesson Package</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {member.specialties.map((specialty: string) => {
-                  const examKey = specialty;
-                  const hourlyRate = member.examRates?.[examKey] || member.examRates?.[specialty.toUpperCase()] || 30;
-                  const singlePrice = hourlyRate;
-                  const fivePackPrice = Math.round(hourlyRate * 5 * 0.85); // 15% discount
-                  const savings = (hourlyRate * 5) - fivePackPrice;
-                  
-                  return (
-                    <div key={specialty}>
-                      <DropdownMenuLabel className="text-xs text-muted-foreground px-2 py-1">
-                        {specialty}
-                      </DropdownMenuLabel>
-                      <DropdownMenuItem 
-                        onClick={async () => {
-                          try {
-                            const { data: { user }, error: authError } = await supabase.auth.getUser();
-                            
-                            if (authError || !user) {
-                              window.location.href = '/login';
-                              return;
-                            }
-                            
-                            const { data, error } = await supabase.functions.invoke('create-payment', {
-                              body: {
-                                tutorId: member.id,
-                                examType: normalizeExamTypeForPayment(specialty),
-                                lessonQuantity: 1
-                              }
-                            });
-
-                            if (error) {
-                              alert(`Payment failed: ${error.message}`);
-                              return;
-                            }
-
-                            if (data?.url) {
-                              window.open(data.url, '_blank');
-                            } else {
-                              alert('Failed to create payment session. Please try again.');
-                            }
-                          } catch (error) {
-                            alert('Something went wrong. Please try again.');
-                          }
-                        }}
-                        className="px-2 py-2 cursor-pointer"
-                      >
-                        <div className="flex flex-col">
-                          <span className="font-medium">Single Lesson</span>
-                          <span className="text-sm text-muted-foreground">£{singlePrice}/hour</span>
-                        </div>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={async () => {
-                          try {
-                            const { data: { user }, error: authError } = await supabase.auth.getUser();
-                            
-                            if (authError || !user) {
-                              window.location.href = '/login';
-                              return;
-                            }
-                            
-                            const { data, error } = await supabase.functions.invoke('create-payment', {
-                              body: {
-                                tutorId: member.id,
-                                examType: normalizeExamTypeForPayment(specialty),
-                                lessonQuantity: 5
-                              }
-                            });
-
-                            if (error) {
-                              alert(`Payment failed: ${error.message}`);
-                              return;
-                            }
-
-                            if (data?.url) {
-                              window.open(data.url, '_blank');
-                            } else {
-                              alert('Failed to create payment session. Please try again.');
-                            }
-                          } catch (error) {
-                            alert('Something went wrong. Please try again.');
-                          }
-                        }}
-                        className="px-2 py-2 cursor-pointer"
-                      >
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">5 Lesson Pack</span>
-                            <Badge variant="destructive" className="text-xs">15% OFF</Badge>
-                          </div>
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <span className="line-through">£{hourlyRate * 5}</span>
-                            <span className="font-medium text-foreground">£{fivePackPrice}</span>
-                          </div>
-                        </div>
-                      </DropdownMenuItem>
-                      {member.specialties.indexOf(specialty) < member.specialties.length - 1 && (
-                        <DropdownMenuSeparator />
-                      )}
-                    </div>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
           
         </CardContent>
