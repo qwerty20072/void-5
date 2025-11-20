@@ -10,129 +10,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu, X, ChevronDown, User, Settings, LogOut, MessageCircle, MessageSquare } from 'lucide-react';
+import { Menu, X, ChevronDown, User, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
   const location = useLocation();
   const { user, loading } = useAuth();
   const { toast } = useToast();
-  // Fetch unread message count
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchUnreadCount = async () => {
-      try {
-        // Get user profile to determine user type
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('user_type')
-          .eq('id', user.id)
-          .single();
-
-        const userType = profile?.user_type?.toLowerCase() === 'tutor' ? 'Tutor' : 'Student';
-
-        // Get conversations with messages
-        let query = supabase
-          .from('conversations')
-          .select(`
-            id,
-            messages (
-              id,
-              created_at,
-              sender_type
-            )
-          `);
-
-        // Filter by user type
-        if (userType === 'Tutor') {
-          query = query.eq('tutor_id', user.id);
-        } else {
-          query = query.eq('client_id', user.id);
-        }
-
-        const { data: conversations } = await query;
-
-        if (conversations) {
-          // Get last read times from localStorage
-          const lastReadTimes = JSON.parse(localStorage.getItem(`lastReadTimes_${user.id}`) || '{}');
-          
-          let totalUnreadCount = 0;
-          
-          conversations.forEach(convo => {
-            const messages = convo.messages || [];
-            const lastReadTime = lastReadTimes[convo.id];
-            const otherPartyType = userType === 'Tutor' ? 'client' : 'tutor';
-            
-            let conversationUnreadCount = 0;
-            
-            if (lastReadTime) {
-              // Count messages after last read time from the other party
-              conversationUnreadCount = messages.filter(msg => 
-                msg.sender_type === otherPartyType && 
-                new Date(msg.created_at) > new Date(lastReadTime)
-              ).length;
-            } else {
-              // If never read, count all messages from the other party
-              conversationUnreadCount = messages.filter(msg => 
-                msg.sender_type === otherPartyType
-              ).length;
-            }
-            
-            totalUnreadCount += conversationUnreadCount;
-          });
-
-          setUnreadCount(totalUnreadCount);
-        }
-      } catch (error) {
-        // Silently handle error - unread count will remain 0
-      }
-    };
-
-    fetchUnreadCount();
-
-    // Set up real-time subscription for message updates
-    const messagesSubscription = supabase
-      .channel('nav-messages')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages'
-        },
-        () => {
-          // Refresh unread count when new messages arrive
-          fetchUnreadCount();
-        }
-      )
-      .subscribe();
-
-    // Also refresh when localStorage changes (when messages are read)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === `lastReadTimes_${user.id}`) {
-        fetchUnreadCount();
-      }
-    };
-
-    // Listen for custom events from within the same window/tab
-    const handleReadStatusUpdate = () => {
-      fetchUnreadCount();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('messagesMarkedAsRead', handleReadStatusUpdate);
-
-    return () => {
-      supabase.removeChannel(messagesSubscription);
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('messagesMarkedAsRead', handleReadStatusUpdate);
-    };
-  }, [user]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -338,18 +225,13 @@ const Navigation = () => {
               </Link>
             </Button>
 
-            {/* Tutor Inbox Section (when logged in) */}
+            {/* Profile Menu (when logged in) */}
             {user && (
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-2 hover:opacity-80 active:opacity-80 transition-opacity touch-manipulation">
                   <div className="flex items-center gap-2">
-                    <MessageCircle className="h-5 w-5 text-primary" />
+                    <User className="h-5 w-5 text-primary" />
                     <span className="text-sm font-medium text-foreground">Profile</span>
-                    {unreadCount > 0 && (
-                      <span className="bg-destructive text-destructive-foreground text-xs px-1.5 py-0.5 rounded-full min-w-[20px] h-5 flex items-center justify-center font-medium">
-                        {unreadCount}
-                      </span>
-                    )}
                   </div>
                   <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 </DropdownMenuTrigger>
@@ -366,26 +248,6 @@ const Navigation = () => {
                     <Link to="/profile" className="flex items-center gap-2 w-full">
                       <Settings className="h-4 w-4" />
                       Profile Settings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link 
-                      to="/messages" 
-                      className="flex items-center gap-2 w-full"
-                      onClick={(e) => {
-                        if (location.pathname === '/messages') {
-                          e.preventDefault();
-                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }
-                      }}
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                      View Messages
-                      {unreadCount > 0 && (
-                        <span className="ml-auto bg-destructive text-destructive-foreground text-xs px-1.5 py-0.5 rounded-full">
-                          {unreadCount}
-                        </span>
-                      )}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -526,24 +388,7 @@ const Navigation = () => {
                    <div className="px-3 py-2 text-sm font-medium text-muted-foreground border-t border-border">
                      {user.email}
                    </div>
-                    
-                    {/* Mobile Tutor Inbox Section */}
-                    <Link
-                      to="/messages"
-                      className="block px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary border border-border rounded-md hover:bg-muted no-underline"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <div className="flex items-center gap-2">
-                        <MessageCircle className="h-4 w-4" />
-                        Inbox
-                        {unreadCount > 0 && (
-                          <span className="ml-auto bg-destructive text-destructive-foreground text-xs px-1.5 py-0.5 rounded-full">
-                            {unreadCount}
-                          </span>
-                        )}
-                      </div>
-                    </Link>
-                    
+                   
                     <Link
                       to="/profile"
                       className="block px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary border border-border rounded-md hover:bg-muted no-underline"
