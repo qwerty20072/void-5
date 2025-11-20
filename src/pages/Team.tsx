@@ -454,31 +454,54 @@ const Team = () => {
             />
           </div>
           
-          {/* Action Button */}
-          <div className="w-full">
+          {/* Action Buttons */}
+          <div className="w-full flex gap-2">
             {member.account_status === 'paused' ? (
-              <Button 
-                disabled
-                className="w-full opacity-50 cursor-not-allowed"
-              >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Contact Unavailable
-              </Button>
-            ) : (
-              <Button 
-                asChild
-                className="w-full text-white hover:text-white hover:scale-105 transition-transform duration-200"
-                style={{ color: 'white' }}
-              >
-                <Link 
-                  to={`/contact/${member.id}`}
-                  className="text-white hover:text-white no-underline flex items-center justify-center"
-                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              <>
+                <Button 
+                  disabled
+                  className="flex-1 opacity-50 cursor-not-allowed"
                 >
                   <MessageSquare className="h-4 w-4 mr-2" />
-                  Contact Now
-                </Link>
-              </Button>
+                  Contact
+                </Button>
+                <Button 
+                  disabled
+                  className="flex-1 opacity-50 cursor-not-allowed"
+                >
+                  Purchase
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  asChild
+                  variant="outline"
+                  className="flex-1 hover:scale-105 transition-transform duration-200"
+                >
+                  <Link 
+                    to={`/contact/${member.id}`}
+                    className="flex items-center justify-center"
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Contact Now
+                  </Link>
+                </Button>
+                <Button 
+                  asChild
+                  className="flex-1 text-white hover:text-white hover:scale-105 transition-transform duration-200"
+                  style={{ color: 'white' }}
+                >
+                  <Link 
+                    to={`/contact/${member.id}?type=purchase`}
+                    className="text-white hover:text-white no-underline flex items-center justify-center"
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  >
+                    Purchase Lessons
+                  </Link>
+                </Button>
+              </>
             )}
           </div>
           
