@@ -12,7 +12,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { User, Edit3, Save, X, LogOut, MessageSquare, Settings, Trash2, Pause, Play, Key } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import Inbox from '@/components/Inbox';
 import { StripeConnectOnboarding } from '@/components/StripeConnectOnboarding';
 import { StripeConnectDashboard } from '@/components/StripeConnectDashboard';
 import { AccountStatusToggle } from '@/components/AccountStatusToggle';

@@ -7,9 +7,6 @@ import Layout from "./components/Layout";
 import Index from "./pages/Index";
 import Team from "./pages/Team";
 import Contact from "./pages/Contact";
-import Chat from "./pages/Chat";
-
-import Messages from "./pages/Messages";
 import TMUA from "./pages/TMUA";
 import TMUAPastPapers from "./pages/TMUAPastPapers";
 import MAT from "./pages/MAT";
@@ -42,9 +39,6 @@ const App = () => (
             <Route index element={<Index />} />
             <Route path="team" element={<Team />} />
             <Route path="contact/:tutorId" element={<Contact />} />
-            
-            <Route path="chat/:tutorId" element={<Chat />} />
-            <Route path="messages" element={<Messages />} />
             <Route path="tmua" element={<TMUA />} />
             <Route path="tmua/past-papers" element={<TMUAPastPapers />} />
             <Route path="mat" element={<MAT />} />
