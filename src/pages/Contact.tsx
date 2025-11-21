@@ -1,19 +1,23 @@
 
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, GraduationCap, Mail, User, MessageSquare } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, GraduationCap, Mail, User, MessageSquare, CreditCard } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { TutorPurchaseFlow } from '@/components/TutorPurchaseFlow';
 
 const Contact = () => {
   const { tutorId } = useParams<{ tutorId: string }>();
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get('type') === 'purchase' ? 'purchase' : 'contact';
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
@@ -160,7 +164,7 @@ const Contact = () => {
           </Button>
         </div>
 
-        {/* Contact Form */}
+        {/* Contact/Purchase Tabs */}
         <Card className="shadow-elegant animate-fade-in-up hover:shadow-lg transition-all duration-300">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4 animate-scale-in">
@@ -169,131 +173,155 @@ const Contact = () => {
               </div>
             </div>
             <CardTitle className="text-3xl font-bold animate-fade-in-delay-200">
-              Book a Session with {tutor.name}
+              {tutor.name}
             </CardTitle>
             <p className="text-muted-foreground animate-fade-in-delay-400">
               {tutor.year} {tutor.course} Student at {tutor.university} • {tutor.price}
             </p>
           </CardHeader>
           <CardContent className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Personal Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium">
-                    Full Name *
-                  </Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">
-                    Email Address *
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-sm font-medium">
-                  Phone Number (Optional)
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="Enter your phone number"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                />
-              </div>
-
-              {/* Services Selection */}
-              <div className="space-y-4">
-                <Label className="text-sm font-medium">
-                  Select Services You're Interested In *
-                </Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 border border-border rounded-lg bg-muted/30">
-                  {tutor.specialties.map((service) => (
-                    <div key={service} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={service}
-                        checked={formData.selectedServices.includes(service)}
-                        onCheckedChange={() => handleServiceToggle(service)}
-                      />
-                      <Label htmlFor={service} className="text-sm font-normal cursor-pointer">
-                        {service}
+            <Tabs defaultValue={defaultTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="contact">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Contact Form
+                </TabsTrigger>
+                <TabsTrigger value="purchase">
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Purchase Lessons
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="contact" className="mt-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Personal Information */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="text-sm font-medium">
+                        Full Name *
                       </Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                        <Input
+                          id="name"
+                          type="text"
+                          placeholder="Enter your full name"
+                          value={formData.name}
+                          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                          className="pl-10"
+                          required
+                        />
+                      </div>
                     </div>
-                  ))}
-                </div>
-                {formData.selectedServices.length === 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    Please select at least one service
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-sm font-medium">
+                        Email Address *
+                      </Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="Enter your email"
+                          value={formData.email}
+                          onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-sm font-medium">
+                      Phone Number (Optional)
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="Enter your phone number"
+                      value={formData.phone}
+                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    />
+                  </div>
+
+                  {/* Services Selection */}
+                  <div className="space-y-4">
+                    <Label className="text-sm font-medium">
+                      Select Services You're Interested In *
+                    </Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 border border-border rounded-lg bg-muted/30">
+                      {tutor.specialties.map((service) => (
+                        <div key={service} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={service}
+                            checked={formData.selectedServices.includes(service)}
+                            onCheckedChange={() => handleServiceToggle(service)}
+                          />
+                          <Label htmlFor={service} className="text-sm font-normal cursor-pointer">
+                            {service}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                    {formData.selectedServices.length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        Please select at least one service
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Additional Information */}
+                  <div className="space-y-2">
+                    <Label htmlFor="additionalInfo" className="text-sm font-medium">
+                      Additional Information
+                    </Label>
+                    <Textarea
+                      id="additionalInfo"
+                      placeholder="Tell us about your goals, current level, preferred schedule, or any specific questions..."
+                      value={formData.additionalInfo}
+                      onChange={(e) => setFormData(prev => ({ ...prev, additionalInfo: e.target.value }))}
+                      rows={4}
+                      className="resize-none"
+                    />
+                  </div>
+
+                  {/* Submit Button */}
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-hero hover:bg-primary/90 transition-all duration-300"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Sending Request...
+                      </>
+                    ) : (
+                      <>
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Send Booking Request
+                      </>
+                    )}
+                  </Button>
+
+                  <p className="text-xs text-muted-foreground text-center">
+                    You'll receive a confirmation email and hear back within 24 hours. 
+                    Free taster lessons available!
                   </p>
-                )}
-              </div>
-
-              {/* Additional Information */}
-              <div className="space-y-2">
-                <Label htmlFor="additionalInfo" className="text-sm font-medium">
-                  Additional Information
-                </Label>
-                <Textarea
-                  id="additionalInfo"
-                  placeholder="Tell us about your goals, current level, preferred schedule, or any specific questions..."
-                  value={formData.additionalInfo}
-                  onChange={(e) => setFormData(prev => ({ ...prev, additionalInfo: e.target.value }))}
-                  rows={4}
-                  className="resize-none"
+                </form>
+              </TabsContent>
+              
+              <TabsContent value="purchase" className="mt-6">
+                <TutorPurchaseFlow 
+                  tutorId={tutorId || ''}
+                  tutorName={tutor.name}
+                  specialties={tutor.specialties}
+                  price={tutor.price}
                 />
-              </div>
-
-              {/* Submit Button */}
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-hero hover:bg-primary/90 transition-all duration-300"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Sending Request...
-                  </>
-                ) : (
-                  <>
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Send Booking Request
-                  </>
-                )}
-              </Button>
-
-              <p className="text-xs text-muted-foreground text-center">
-                You'll receive a confirmation email and hear back within 24 hours. 
-                Free taster lessons available!
-              </p>
-            </form>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>
