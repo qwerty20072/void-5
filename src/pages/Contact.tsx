@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, GraduationCap, Mail, User, MessageSquare, CreditCard } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { TutorPurchaseFlow } from '@/components/TutorPurchaseFlow';
@@ -29,42 +29,65 @@ const Contact = () => {
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Team member data - should match the data in Team.tsx
-  const teamMembers = [
-    {
-      id: "vincent-xue",
-      name: "Vincent",
-      role: "Tutor",
-      university: "University of Oxford",
-      course: "Mathematics",
-      year: "1st Year",
-      specialties: ["TMUA", "MAT", "Interview Prep"],
-      price: "£30/hour"
-    },
-    {
-      id: "praneeth-lakshman",
-      name: "Praneeth",
-      role: "Tutor", 
-      university: "University of Cambridge",
-      course: "Physical Natural Sciences",
-      year: "1st Year",
-      specialties: ["ESAT Maths 1 and 2", "ESAT Physics", "Interview Prep"],
-      price: "£30/hour"
-    },
-    {
-      id: "pranav-sharma",
-      name: "Pranav",
-      role: "Tutor",
-      university: "Imperial College London",
-      course: "Electrical and Electronic Engineering",
-      year: "1st Year",
-      specialties: ["ESAT Maths 1 and 2", "ESAT Physics", "Interview Prep"],
-      price: "£30/hour"
-    }
-  ];
+  const [tutor, setTutor] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const tutor = teamMembers.find(member => member.id === tutorId);
+  // Load tutor data from database
+  useEffect(() => {
+    const loadTutor = async () => {
+      if (!tutorId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', tutorId)
+          .single();
+
+        if (error) throw error;
+
+        if (profile) {
+          // Get specialties from subjects
+          let specialties: string[] = [];
+          if (profile.subjects && typeof profile.subjects === 'object' && !Array.isArray(profile.subjects)) {
+            const subjectsObj = profile.subjects as { [key: string]: any };
+            if (subjectsObj.exams && Array.isArray(subjectsObj.exams)) {
+              specialties = subjectsObj.exams;
+            }
+          }
+
+          // Get hourly rate from exam_rates
+          let price = '£30/hour'; // default
+          if (profile.exam_rates && typeof profile.exam_rates === 'object') {
+            const rates = Object.values(profile.exam_rates as Record<string, number>);
+            if (rates.length > 0) {
+              const avgRate = Math.round(rates.reduce((a, b) => a + b, 0) / rates.length);
+              price = `£${avgRate}/hour`;
+            }
+          }
+
+          setTutor({
+            id: profile.id,
+            name: profile.name || 'Tutor',
+            university: profile.university || 'University',
+            course: profile.degree || 'Course',
+            year: profile.year || 'Year',
+            specialties,
+            price
+          });
+        }
+      } catch (error) {
+        console.error('Error loading tutor:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTutor();
+  }, [tutorId]);
 
   const handleServiceToggle = (service: string) => {
     setFormData(prev => ({
@@ -129,6 +152,17 @@ const Contact = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading tutor information...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!tutor) {
     return (
