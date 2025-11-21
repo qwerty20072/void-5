@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { GraduationCap, MapPin, Clock, ArrowUp, Mail, MessageSquare, RotateCcw, ChevronDown } from 'lucide-react';
+import { GraduationCap, MapPin, Clock, ArrowUp, Mail, MessageSquare, RotateCcw, ChevronDown, CreditCard } from 'lucide-react';
 import { TutorPricingDisplay } from '@/components/TutorPricingDisplay';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -480,7 +480,7 @@ const Team = () => {
                   className="flex-1 hover:scale-105 transition-transform duration-200"
                 >
                   <Link 
-                    to={`/contact/${member.id}`}
+                    to={`/contact/${member.id}?type=contact`}
                     className="flex items-center justify-center"
                     onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                   >
@@ -498,6 +498,7 @@ const Team = () => {
                     className="text-white hover:text-white no-underline flex items-center justify-center"
                     onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                   >
+                    <CreditCard className="h-4 w-4 mr-2" />
                     Purchase Lessons
                   </Link>
                 </Button>
